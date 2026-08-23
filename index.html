@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alchemy — Fusión de Piedras Mágicas</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1>ALCHEMY</h1>
+    <p class="sub">Une 3 piedras iguales y forja la piedra legendaria</p>
+  </header>
+
+  <main>
+    <div id="left">
+      <div class="panel">
+        <h2>Puntaje</h2>
+        <div id="score" class="big">0</div>
+        <div class="row"><span>Cadena</span><b id="chain">×1</b></div>
+        <div class="row"><span>Mejor piedra</span><b id="best">—</b></div>
+      </div>
+
+      <div class="panel">
+        <h2>Colección <span id="disc" class="muted">0/12</span></h2>
+        <ul id="codex"></ul>
+      </div>
+    </div>
+
+    <div id="stage">
+      <canvas id="board" width="350" height="500"></canvas>
+      <div id="ovPause" class="overlay hidden"><div class="card"><h3>Pausa</h3><p>Pulsa P para continuar</p></div></div>
+      <div id="ovOver" class="overlay hidden">
+        <div class="card">
+          <h3>¡Fin del hechizo!</h3>
+          <p>Puntaje final: <b id="finalScore">0</b></p>
+          <p>Mayor piedra: <b id="finalGem">—</b></p>
+          <button id="btnAgain">Jugar de nuevo</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="right">
+      <div class="panel center">
+        <h2>Siguiente</h2>
+        <canvas id="next" width="96" height="150"></canvas>
+      </div>
+
+      <div class="panel">
+        <h2>Controles</h2>
+        <ul class="keys">
+          <li><kbd>←</kbd><kbd>→</kbd> Mover</li>
+          <li><kbd>↑</kbd>/<kbd>X</kbd>/<kbd>Z</kbd> Girar</li>
+          <li><kbd>↓</kbd>/<kbd>Espacio</kbd> Soltar piedra</li>
+          <li><kbd>P</kbd> Pausa</li>
+        </ul>
+      </div>
+
+      <div class="btns">
+        <button id="btnPause">Pausa</button>
+        <button id="btnReset">Reiniciar</button>
+        <button id="btnSound">Sonido: SI</button>
+        <button id="btnMusic">Musica: SI</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="mcontrols">
+    <button data-act="left">←</button>
+    <button data-act="rot">⟳</button>
+    <button data-act="right">→</button>
+    <button data-act="down">↓</button>
+    <button data-act="drop">⤓</button>
+  </div>
+
+  <footer class="muted">Posiciona la piedra arriba y suéltala con ↓ · Une 3 iguales para fusionar · La piedra 12 es la definitiva</footer>
+</div>
+<audio id="music" src="tema principal.mp3" loop preload="auto"></audio>
+<script src="game.js"></script>
+</body>
+</html>
