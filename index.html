@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alchemy — Fusión de Piedras Mágicas</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="wrap">
@@ -15,6 +15,20 @@
 
   <main>
     <div id="left">
+      <div class="panel character-panel">
+        <h2>Espectador</h2>
+        <div id="character-box" class="character-box">
+          <div class="character-avatar">
+            <div class="char-aura"></div>
+            <div id="char-anim-container" class="char-anim-container">
+              <img id="char-main-img" src="assets/images/character/kobold_default.png" class="char-bust" alt="Kobold Espectador">
+              <div id="char-sparkle" class="char-sparkle">✨</div>
+            </div>
+          </div>
+          <div id="character-tag" class="character-tag">¡Observando la partida! ✨</div>
+        </div>
+      </div>
+
       <div class="panel">
         <h2>Puntaje</h2>
         <div id="score" class="big">0</div>
@@ -29,6 +43,7 @@
     </div>
 
     <div id="stage">
+      <div class="board-frame-overlay"></div>
       <canvas id="board" width="350" height="500"></canvas>
       <div id="ovPause" class="overlay hidden"><div class="card"><h3>Pausa</h3><p>Pulsa P para continuar</p></div></div>
       <div id="ovOver" class="overlay hidden">
@@ -76,7 +91,7 @@
 
   <footer class="muted">Posiciona la piedra arriba y suéltala con ↓ · Une 3 iguales para fusionar · La piedra 12 es la definitiva</footer>
 </div>
-<audio id="music" src="tema principal.mp3" loop preload="auto"></audio>
-<script src="game.js"></script>
+<audio id="music" src="assets/audio/tema principal.mp3" loop preload="auto"></audio>
+<script src="js/game.js"></script>
 </body>
 </html>

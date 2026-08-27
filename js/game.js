@@ -58,12 +58,19 @@ let sprites = [], sheetReady = false;
       sprites[i] = img;
       GEMS[i].c = SPRITE_COLORS[i];
       GEMS[i].glow = mix(SPRITE_COLORS[i], "#ffffff", 0.25);
-      codexItems[i].style.setProperty("--g", GEMS[i].glow);
-      codexItems[i].firstChild.style.background = 'center/contain no-repeat url("piedra' + String(i + 1).padStart(2, "0") + '.png")';
+      if (typeof codexItems !== "undefined" && codexItems[i]) {
+        codexItems[i].style.setProperty("--g", GEMS[i].glow);
+        if (codexItems[i].firstChild) {
+          codexItems[i].firstChild.style.background = 'center/contain no-repeat url("assets/images/piedras/piedra' + String(i + 1).padStart(2, "0") + '.png")';
+        }
+      }
       loaded++;
       if (loaded === MAX_TIER) sheetReady = true;
+      if (typeof drawNext === "function" && typeof nextPair !== "undefined" && nextPair) {
+        drawNext();
+      }
     };
-    img.src = "piedra" + String(i + 1).padStart(2, "0") + ".png";
+    img.src = "assets/images/piedras/piedra" + String(i + 1).padStart(2, "0") + ".png";
   }
 })();
 
@@ -85,6 +92,154 @@ GEMS.forEach(function (g, i) {
 });
 const codexItems = Array.prototype.slice.call(codexUl.children);
 
+const Character = {
+  mainImg: document.getElementById("char-main-img"),
+  tag: document.getElementById("character-tag"),
+  animContainer: document.getElementById("char-anim-container"),
+  box: document.getElementById("character-box"),
+  sparkle: document.getElementById("char-sparkle"),
+  poseTimer: null,
+  sayTimer: null,
+  shockTimer: null,
+  currentPose: "default",
+  priority: 0,
+  priorityUntil: 0,
+  danger: false,
+  defaultTag: "¡Vigilando la mina! ⛏️",
+
+  // Mapeo exacto de los 5 personajes de Kobold Def (de izquierda a derecha):
+  // 1: Combo x1 (primer personaje)
+  // 2: Combo x3 o más (segundo personaje)
+  // 3: Game Over / Derrota (tercer personaje)
+  // 4: Default / Jugando y moviendo piezas (cuarto personaje)
+  // 5: Combo x2 (quinto personaje)
+  SPRITES: {
+    default: "assets/images/character/kobold_default.png",
+    combo1: "assets/images/character/kobold_combo1.png",
+    combo2: "assets/images/character/kobold_combo2.png",
+    combo3: "assets/images/character/kobold_combo3.png",
+    gameover: "assets/images/character/kobold_gameover.png"
+  },
+
+  init: function () {
+    this.preload();
+    this.startIdleChatter();
+    this.setPose("default");
+    this.say("¡A forjar piedras! ⛏️");
+  },
+
+  preload: function () {
+    for (const k in this.SPRITES) {
+      const im = new Image();
+      im.src = this.SPRITES[k];
+    }
+  },
+
+  setPose: function (poseName, durationMs, prio) {
+    if (!this.mainImg) return;
+    if (prio !== undefined) {
+      if (now < this.priorityUntil && prio < this.priority) return;
+      this.priority = prio;
+      this.priorityUntil = now + (durationMs || 1200);
+    }
+    const sprite = this.SPRITES[poseName] || this.SPRITES.default;
+    this.currentPose = poseName;
+    this.mainImg.src = sprite;
+
+    clearTimeout(this.poseTimer);
+    if (poseName !== "default" && durationMs && state === "play") {
+      const self = this;
+      this.poseTimer = setTimeout(function () {
+        if (state === "play") {
+          self.setPose("default");
+        }
+      }, durationMs);
+    }
+  },
+
+  setDanger: function (on) {
+    if (this.danger === on) return;
+    this.danger = on;
+    if (on) {
+      if (this.currentPose === "default") {
+        this.say("¡El tablero se llena! ⚠️", 2600);
+      }
+    }
+  },
+
+  react: function (poseName, text, durationMs, animType) {
+    durationMs = durationMs || 1600;
+    const prios = {
+      default: 0,
+      combo1: 1,
+      combo2: 2,
+      combo3: 3,
+      gameover: 99
+    };
+    const prio = prios[poseName] !== undefined ? prios[poseName] : 1;
+    this.setPose(poseName, durationMs, prio);
+
+    if (this.animContainer && animType) {
+      this.animContainer.classList.remove("react-jump", "react-wink", "react-cheer", "react-gasp", "react-bounce");
+      void this.animContainer.offsetWidth;
+      this.animContainer.classList.add(animType);
+    }
+
+    if (prio >= 3) this.shock(900);
+    if (this.sparkle && prio >= 1) {
+      this.sparkle.classList.add("active");
+      const sp = this.sparkle;
+      setTimeout(function () { sp.classList.remove("active"); }, 800);
+    }
+
+    if (text) this.say(text, durationMs);
+  },
+
+  shock: function (ms) {
+    if (!this.box) return;
+    this.box.classList.add("shock");
+    clearTimeout(this.shockTimer);
+    const self = this;
+    this.shockTimer = setTimeout(function () {
+      self.box.classList.remove("shock");
+    }, ms || 800);
+  },
+
+  say: function (text, durationMs) {
+    if (!this.tag) return;
+    this.tag.textContent = text;
+    clearTimeout(this.sayTimer);
+    if (durationMs) {
+      const self = this;
+      this.sayTimer = setTimeout(function () {
+        self.tag.textContent = self.defaultTag;
+      }, durationMs + 400);
+    }
+  },
+
+  startIdleChatter: function () {
+    const self = this;
+    const lines = [
+      "Shh... kobold vigilando 👀",
+      "Ese cristal brilla... ¡mío! 🪙",
+      "¡Cuidado con llenar el tablero! ⚠️",
+      "Mi vela nunca se apaga 🕯️",
+      "Zzz... ¡ejem! Estaba despierto 🌙",
+      "¿Ves esa piedra? Brilla bonito ✨",
+      "La mina susurra... 🔨"
+    ];
+    const tick = function () {
+      if (self.currentPose === "default" && !self.danger && state === "play") {
+        const l = lines[Math.floor(Math.random() * lines.length)];
+        self.say(l, 3000);
+      }
+      setTimeout(tick, 14000 + Math.random() * 9000);
+    };
+    setTimeout(tick, 9000);
+  }
+};
+Character.init();
+
 function reset() {
   board = [];
   for (let r = 0; r < ROWS; r++) board.push(new Array(COLS).fill(0));
@@ -105,23 +260,75 @@ function reset() {
   state = "play";
   ovOver.classList.add("hidden");
   ovPause.classList.add("hidden");
+  Character.setPose("default", 0, 999);
+  Character.priority = 0;
+  Character.priorityUntil = 0;
+  Character.say("¡A forjar piedras! ✨", 2000);
   spawn();
   updateHUD();
 }
 
 function randTier() {
-  const n = discovered.size;
-  let w0 = 0.70, w1 = 0.24;
-  if (n >= 10) { w0 = 0.42; w1 = 0.36; }
-  else if (n >= 7) { w0 = 0.55; w1 = 0.32; }
-  const r = Math.random();
-  return r < w0 ? 1 : r < w0 + w1 ? 2 : 3;
+    // base: rojas y azules dominan; las desbloqueadas entran con peso acotado
+    const weights = [[1, 0.52], [2, 0.26]];
+    if (discovered.has(3)) weights.push([3, 0.08]);
+    const unlocked = [];
+    for (let t = 4; t <= MAX_TIER; t++) if (discovered.has(t)) unlocked.push(t);
+    const rest = 1 - weights.reduce(function (s, w) { return s + w[1]; }, 0);
+    if (unlocked.length) {
+        let units = unlocked.length;
+        if (discovered.has(MAX_TIER)) units -= 0.5; // la definitiva pesa la mitad
+        const each = Math.min(0.04, rest / units);
+        let used = 0;
+        for (const t of unlocked) {
+            const u = t === MAX_TIER ? each * 0.5 : each;
+            weights.push([t, u]);
+            used += u;
+        }
+        const leftover = rest - used;
+        weights[0][1] += leftover * 0.65;
+        weights[1][1] += leftover * 0.35;
+    } else {
+        weights[0][1] += rest * 0.65;
+        weights[1][1] += rest * 0.35;
+    }
+    let r = Math.random();
+    for (const w of weights) {
+        if (r < w[1]) return w[0];
+        r -= w[1];
+    }
+    return 1;
+}
+
+function discover(tier) {
+  if (discovered.has(tier)) return;
+  discovered.add(tier);
+  if (tier >= 4 && state === "play") {
+    Character.say("¡Piedra nueva: " + GEMS[tier - 1].name + "! ✨", 2200);
+  }
 }
 
 function makePair() {
   const col = Math.floor(COLS / 2);
   const a0 = Math.PI / 2;
   return { col: col, row: 1, rot: 0, a: randTier(), b: randTier(), fx: cx(col), fy: cy(1), t0: -1e9, dur: 1, ease: "linear", contAng: a0, af: a0, at: a0 };
+}
+
+function getPairVisualPos(p) {
+  if (!p) return { x: 0, y: 0 };
+  let ix = cx(p.col), iy = cy(p.row);
+  if (!p.t0 || p.dur <= 0) return { x: ix, y: iy };
+  const k = Math.min(1, Math.max(0, (now - p.t0) / p.dur));
+  if (k < 1) {
+    let s;
+    if (p.ease === "linear") s = k;
+    else if (p.ease === "back") s = backOut(k);
+    else if (p.ease === "smooth") s = k * k * (3 - 2 * k);
+    else s = 1 - Math.pow(1 - k, 3);
+    ix = p.fx + (ix - p.fx) * s;
+    iy = p.fy + (iy - p.fy) * s;
+  }
+  return { x: ix, y: iy };
 }
 
 function slideAnim(p, fx, fy, dur, ease) {
@@ -167,11 +374,11 @@ function shifted(p, dc, dr, rot) {
 }
 
 function move(dx) {
-  if (state !== "play" || dropping || resPhase) return;
+  if (state !== "play" || dropping || resPhase || !pair) return;
   if (canPlace(shifted(pair, dx, 0))) {
-    const fx = cx(pair.col), fy = cy(pair.row);
+    const pos = getPairVisualPos(pair);
     pair.col += dx;
-    slideAnim(pair, fx, fy, 100, "out");
+    slideAnim(pair, pos.x, pos.y, 125, "out");
     sfx(190, 0.03, "square", 0.02);
   }
 }
@@ -184,19 +391,19 @@ function angleTo(from, to) {
 }
 
 function rotate(dir) {
-  if (state !== "play" || dropping || resPhase) return;
+  if (state !== "play" || dropping || resPhase || !pair) return;
   const nr = (pair.rot + dir + ROTS.length) % ROTS.length;
   const kicks = [[0, 0], [-1, 0], [1, 0]];
   for (let i = 0; i < kicks.length; i++) {
     if (canPlace(shifted(pair, kicks[i][0], kicks[i][1], nr))) {
-      const fx = cx(pair.col), fy = cy(pair.row);
+      const pos = getPairVisualPos(pair);
       const af = pair.contAng;
       const off = OFF[ROTS[nr]];
       const at = angleTo(af, Math.atan2(off[1], off[0]));
       pair.col += kicks[i][0];
       pair.row += kicks[i][1];
       pair.rot = nr;
-      spinAnim(pair, fx, fy, 150, af, at);
+      spinAnim(pair, pos.x, pos.y, 150, af, at);
       sfx(260, 0.04, "square", 0.02);
       return;
     }
@@ -210,10 +417,10 @@ function ghostRow() {
 }
 
 function startDrop() {
-  if (state !== "play" || dropping || resPhase) return;
+  if (state !== "play" || dropping || resPhase || !pair) return;
   const dr = ghostRow();
   if (dr <= 0) { lockResolve(); return; }
-  const fx = cx(pair.col), fy = cy(pair.row);
+  const pos = getPairVisualPos(pair);
   for (let i = 1; i <= dr; i++) {
     const cells = shifted(pair, 0, i);
     for (let j = 0; j < cells.length; j++) {
@@ -223,21 +430,22 @@ function startDrop() {
     }
   }
   pair.row += dr;
-  slideAnim(pair, fx, fy, Math.max(100, dr * DROP_CELL_MS), "linear");
+  slideAnim(pair, pos.x, pos.y, Math.max(100, dr * DROP_CELL_MS), "linear");
   dropping = true;
 }
 
 function lockResolve() {
-  const cells = pairCells(pair);
-  for (let i = 0; i < cells.length; i++) {
-    const cell = cells[i];
-    board[cell.r][cell.c] = cell.t;
-    discovered.add(cell.t);
-    for (let k = 0; k < 4; k++) {
-      particles.push(dot(cx(cell.c), cy(cell.r), "#ffffff", 70, 0.3));
+    const cells = pairCells(pair);
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        board[cell.r][cell.c] = cell.t;
+        discover(cell.t);
+        for (let k = 0; k < 4; k++) {
+            particles.push(dot(cx(cell.c), cy(cell.r), "#ffffff", 70, 0.3));
+        }
     }
-  }
-  sfx(140, 0.06, "triangle", 0.04);
+    pair = null;
+    sfx(140, 0.06, "triangle", 0.04);
   chainCount = 0;
   ghostStones = [];
   falls = [];
@@ -285,7 +493,7 @@ function nextWave() {
     discovered.add(tier);
     if (tier < MAX_TIER) {
       board[tgt.r][tgt.c] = tier + 1;
-      discovered.add(tier + 1);
+      discover(tier + 1);
       pops.set(tgt.c + "," + tgt.r, now);
     } else {
       pts += len * 250 * mult;
@@ -298,6 +506,17 @@ function nextWave() {
   floats.push(mkFloat(anchor.c, anchor.r, "+" + wavePts, "#ffd76a"));
   if (chainCount >= 2) {
     floats.push({ x: COLS * CELL / 2, y: ROWS * CELL / 2, text: "COMBO x" + chainCount, color: "#ff8fd0", t0: now, dur: 1100, big: true });
+    let lines;
+    if (chainCount >= 3) {
+      lines = ["¡COMBO x" + chainCount + "! 🤯", "¡LEYENDA! 👑", "¡Los espíritus bailan! 💃", "¡INCREÍBLE! 🌟"];
+      Character.react("combo3", lines[Math.floor(Math.random() * lines.length)], 2200, "react-cheer");
+    } else {
+      lines = ["¡Combo x2! 🔥", "¡Doble fusión! ✨", "¡Ahí viene! 👀", "¡Otra vez! ⚡"];
+      Character.react("combo2", lines[Math.floor(Math.random() * lines.length)], 1800, "react-jump");
+    }
+  } else {
+    const praises = ["¡Gran fusión! ✨", "¡Poder alquímico! 🧪", "¡Esa piedra brilla! 💎", "¡Excelente forja! ⚡", "¡Bien hecho! 👏", "¡Sigue así! 🌟", "¡Jajaja! ¡Qué chispa! ⚡"];
+    Character.react("combo1", praises[Math.floor(Math.random() * praises.length)], 1500, "react-bounce");
   }
   shake = Math.min(14, shake + 3 + chainCount * 2);
   sfx(280 + chainCount * 90, 0.16, "triangle", 0.06, 260);
@@ -374,6 +593,7 @@ function gameOver() {
   document.getElementById("finalScore").textContent = score;
   document.getElementById("finalGem").textContent = bestT ? GEMS[bestT - 1].name : "-";
   ovOver.classList.remove("hidden");
+  Character.react("gameover", "¡Nooo! ¡Buen intento! 🪄", 4000, "react-gasp");
   sfx(320, 0.4, "sawtooth", 0.05, -240);
   updateHUD();
 }
@@ -469,10 +689,11 @@ function drawGem(g, x, y, r, tier, scale, alpha) {
   g.translate(x, y);
   g.scale(scale, scale);
   g.globalAlpha *= alpha;
-  if (sheetReady && sprites[tier - 1]) {
+  const sprite = sprites[tier - 1];
+  if (sprite && (sheetReady || sprite.complete)) {
     g.shadowColor = G.glow;
     g.shadowBlur = r * 0.75;
-    g.drawImage(sprites[tier - 1], -r * 1.05, -r * 1.05, r * 2.1, r * 2.1);
+    g.drawImage(sprite, -r * 1.05, -r * 1.05, r * 2.1, r * 2.1);
     g.restore();
     return;
   }
@@ -561,11 +782,11 @@ function render() {
   if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
 
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#12142e");
-  bg.addColorStop(1, "#0b0c20");
+  bg.addColorStop(0, "#0e111c");
+  bg.addColorStop(1, "#090a13");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  ctx.strokeStyle = "rgba(255,255,255,0.035)";
   ctx.lineWidth = 1;
   for (let c = 1; c < COLS; c++) { ctx.beginPath(); ctx.moveTo(c * CELL, 0); ctx.lineTo(c * CELL, H); ctx.stroke(); }
   for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(W, r * CELL); ctx.stroke(); }
@@ -604,13 +825,12 @@ function render() {
   }
 
   if (state === "play" && pair) {
-    let ix = cx(pair.col), iy = cy(pair.row);
+    const pos = getPairVisualPos(pair);
+    let ix = pos.x, iy = pos.y;
     let ang = pair.at;
     const k = Math.min(1, Math.max(0, (now - pair.t0) / pair.dur));
     if (k < 1) {
       const s = pair.ease === "linear" ? k : pair.ease === "back" ? backOut(k) : 1 - Math.pow(1 - k, 3);
-      ix = pair.fx + (ix - pair.fx) * s;
-      iy = pair.fy + (iy - pair.fy) * s;
       ang = pair.af + (pair.at - pair.af) * s;
     }
     const pulse = 1.07 + 0.04 * Math.sin(now / 200);
@@ -677,14 +897,17 @@ function render() {
   vg.addColorStop(1, "rgba(4,4,18,0.3)");
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, W, H);
+
+  drawNext();
 }
 
 function drawNext() {
   nctx.clearRect(0, 0, 96, 150);
-  nctx.fillStyle = "rgba(255,255,255,0.04)";
+  nctx.fillStyle = "#0c0e18";
   nctx.fillRect(0, 0, 96, 150);
-  drawGem(nctx, 48, 42, 28, nextPair.b);
-  drawGem(nctx, 48, 108, 28, nextPair.a);
+  if (!nextPair) return;
+  drawGem(nctx, 48, 42, 28, nextPair.a);
+  drawGem(nctx, 48, 108, 28, nextPair.b);
 }
 
 function updateHUD() {
@@ -790,9 +1013,9 @@ window.addEventListener("blur", function () {
 });
 
 function loop(ts) {
-  now = ts;
-  const dt = Math.min(50, ts - lastTs);
-  lastTs = ts;
+    now = ts;
+    const dt = Math.max(0, Math.min(50, ts - lastTs));
+    lastTs = ts;
   if (state === "play" && dropping && pair) {
     if (now - pair.t0 >= pair.dur) {
       dropping = false;
@@ -805,6 +1028,9 @@ function loop(ts) {
     else if (resPhase === "pop" && el >= POP_MS) beginSettle();
     else if (resPhase === "fall" && el >= resDur) nextWave();
   }
+  let danger = false;
+  for (let c = 0; c < COLS; c++) if (board[0][c]) danger = true;
+  Character.setDanger(danger);
   updateFx(dt / 1000);
   render();
   requestAnimationFrame(loop);

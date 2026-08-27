@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kobold Espectador — Test de Poses</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .test-section {
+      margin: 20px auto;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+    .test-grid {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .test-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      width: 150px;
+    }
+    .test-card img {
+      height: 140px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    }
+    .test-card h4 {
+      font-size: 13px;
+      color: #ffd76a;
+      margin: 8px 0 4px;
+    }
+    .test-card p {
+      font-size: 11px;
+      color: #aab0e0;
+    }
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .test-controls button {
+      background: linear-gradient(135deg, #7ea8ff 0%, #a05ce6 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .test-controls button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <header>
+      <h1>ESPECTADOR KOBOLD</h1>
+      <p class="sub">Prueba de integración de las 5 poses recortadas</p>
+    </header>
+
+    <div class="test-section">
+      <div class="panel character-panel" style="width: 260px;">
+        <h2>Espectador en Vivo</h2>
+        <div id="character-box" class="character-box">
+          <div class="character-avatar">
+            <div class="char-aura"></div>
+            <div id="char-anim-container" class="char-anim-container">
+              <img id="char-main-img" src="assets/images/character/kobold_default.png" class="char-bust" alt="Kobold Espectador">
+              <div id="char-sparkle" class="char-sparkle">✨</div>
+            </div>
+          </div>
+          <div id="character-tag" class="character-tag">¡Vigilando la mina! ⛏️</div>
+        </div>
+
+        <div class="test-controls">
+          <button onclick="testPose('default', '¡Vigilando la mina! ⛏️', 0, '')">Default</button>
+          <button onclick="testPose('combo1', '¡Gran fusión! ✨', 1500, 'react-bounce')">Combo x1</button>
+          <button onclick="testPose('combo2', '¡Doble fusión! 🔥', 1800, 'react-jump')">Combo x2</button>
+          <button onclick="testPose('combo3', '¡COMBO x3 LEYENDA! 👑', 2200, 'react-cheer')">Combo x3+</button>
+          <button onclick="testPose('gameover', '¡Nooo! ¡Buen intento! 🪄', 4000, 'react-gasp')">Game Over</button>
+        </div>
+      </div>
+
+      <div class="panel" style="max-width: 860px;">
+        <h2>Poses Recortadas de Kobold Def (De Izquierda a Derecha)</h2>
+        <div class="test-grid">
+          <div class="test-card">
+            <img src="assets/images/character/kobold_combo1.png" alt="1. Combo x1">
+            <h4>1. Combo x1</h4>
+            <p>1er personaje (izq)</p>
+          </div>
+          <div class="test-card">
+            <img src="assets/images/character/kobold_combo3.png" alt="2. Combo x3+">
+            <h4>2. Combo x3+</h4>
+            <p>2do personaje</p>
+          </div>
+          <div class="test-card">
+            <img src="assets/images/character/kobold_gameover.png" alt="3. Game Over">
+            <h4>3. Game Over</h4>
+            <p>3er personaje (derrota)</p>
+          </div>
+          <div class="test-card">
+            <img src="assets/images/character/kobold_default.png" alt="4. Default">
+            <h4>4. Default</h4>
+            <p>4to personaje (jugando)</p>
+          </div>
+          <div class="test-card">
+            <img src="assets/images/character/kobold_combo2.png" alt="5. Combo x2">
+            <h4>5. Combo x2</h4>
+            <p>5to personaje (der)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const Character = {
+      mainImg: document.getElementById("char-main-img"),
+      tag: document.getElementById("character-tag"),
+      animContainer: document.getElementById("char-anim-container"),
+      box: document.getElementById("character-box"),
+      sparkle: document.getElementById("char-sparkle"),
+      timer: null,
+      SPRITES: {
+        default: "assets/images/character/kobold_default.png",
+        combo1: "assets/images/character/kobold_combo1.png",
+        combo2: "assets/images/character/kobold_combo2.png",
+        combo3: "assets/images/character/kobold_combo3.png",
+        gameover: "assets/images/character/kobold_gameover.png"
+      }
+    };
+
+    function testPose(name, text, durationMs, anim) {
+      Character.mainImg.src = Character.SPRITES[name] || Character.SPRITES.default;
+      Character.tag.textContent = text;
+      
+      if (anim && Character.animContainer) {
+        Character.animContainer.classList.remove("react-jump", "react-wink", "react-cheer", "react-gasp", "react-bounce");
+        void Character.animContainer.offsetWidth;
+        Character.animContainer.classList.add(anim);
+      }
+      if (name === "combo3" || name === "gameover") {
+        Character.box.classList.add("shock");
+        setTimeout(() => Character.box.classList.remove("shock"), 900);
+      }
+      if (name !== "default") {
+        Character.sparkle.classList.add("active");
+        setTimeout(() => Character.sparkle.classList.remove("active"), 800);
+      }
+      
+      clearTimeout(Character.timer);
+      if (name !== "default" && durationMs && name !== "gameover") {
+        Character.timer = setTimeout(() => {
+          testPose("default", "¡Vigilando la mina! ⛏️", 0, "");
+        }, durationMs);
+      }
+    }
+  </script>
+</body>
+</html>
