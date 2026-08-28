@@ -7,11 +7,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   background: #080a12 url("../assets/images/Main Menu buttonless.jpeg") center center / cover no-repeat;
   transition: opacity 0.4s ease, visibility 0.4s ease;
-  padding-bottom: 8vh;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 #main-menu.hidden {
@@ -30,15 +30,19 @@
 }
 
 .menu-content {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 0);
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   max-width: 92vw;
-  width: 420px;
-  padding: 0 12px;
+  width: 380px;
+  padding: 0;
+  margin: 0;
 }
 
 /* Botones genericos temporales del menu */
@@ -46,23 +50,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   width: 100%;
+  margin: 0 auto;
 }
 
 .menu-btn {
   width: 100%;
-  max-width: 360px;
-  height: 54px;
-  padding: 0 20px;
+  max-width: 340px;
+  height: 52px;
+  margin: 0 auto;
+  padding: 0;
   cursor: pointer;
   outline: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   border-radius: 14px;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -73,6 +81,12 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
+}
+
+.menu-btn span {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 .menu-btn:focus-visible {
@@ -332,17 +346,18 @@
 }
 
 @media (max-width: 600px) {
-  #main-menu {
-    padding-bottom: 6vh;
+  .menu-content {
+    top: 48%;
+    width: 90vw;
   }
   .menu-btn {
     height: 48px;
-    font-size: 17px;
-    max-width: 320px;
+    font-size: 16px;
+    max-width: 300px;
   }
   .menu-btn-play {
     height: 56px;
-    font-size: 20px;
+    font-size: 19px;
   }
   .modal-box {
     padding: 20px 16px;
