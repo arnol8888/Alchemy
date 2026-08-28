@@ -909,33 +909,17 @@ function getHighestStoneRow() {
 }
 
 function drawDangerLine(g, W, H, alpha) {
-  const lineY = 2 * CELL; // 100px - Límite de peligro
-  const pulse = 0.5 + 0.5 * Math.sin(now / 150); // Efecto intermitente apagado/encendido
-  const combAlpha = alpha * (0.2 + 0.8 * pulse);
+  const lineY = 2 * CELL; // 100px - Límite de aviso
+  const pulse = 0.5 + 0.5 * Math.sin(now / 180); // Respiración suave
+  const combAlpha = alpha * (0.12 + 0.38 * pulse); // Opacidad tenue (0.12 a 0.50)
 
   g.save();
 
-  // 1. Resplandor exterior suave
-  g.shadowColor = "rgba(220, 40, 60, 0.7)";
-  g.shadowBlur = 8 * pulse + 3;
-  g.strokeStyle = `rgba(220, 45, 65, ${0.35 * combAlpha})`;
-  g.lineWidth = 4.5;
-  g.beginPath();
-  g.moveTo(0, lineY);
-  g.lineTo(W, lineY);
-  g.stroke();
-
-  // 2. Línea roja principal
-  g.strokeStyle = `rgba(230, 50, 70, ${0.75 * combAlpha})`;
-  g.lineWidth = 2;
-  g.beginPath();
-  g.moveTo(0, lineY);
-  g.lineTo(W, lineY);
-  g.stroke();
-
-  // 3. Núcleo sutil claro
-  g.strokeStyle = `rgba(255, 210, 220, ${0.5 * combAlpha})`;
-  g.lineWidth = 0.8;
+  // Resplandor muy sutil y línea fina y tenue
+  g.shadowColor = "rgba(230, 50, 70, 0.35)";
+  g.shadowBlur = 3 * pulse + 1;
+  g.strokeStyle = `rgba(235, 65, 80, ${combAlpha})`;
+  g.lineWidth = 1.2;
   g.beginPath();
   g.moveTo(0, lineY);
   g.lineTo(W, lineY);
