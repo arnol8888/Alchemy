@@ -923,14 +923,17 @@ function updateHUD() {
 }
 
 function sfx(freq, dur, type, gain, slide) {
+  if (typeof AudioSettings !== "undefined" && AudioSettings.sfxMuted) return;
   if (muted) return;
+  const sfxVol = (typeof AudioSettings !== "undefined" && typeof AudioSettings.sfxVolume === "number") ? AudioSettings.sfxVolume : 1;
+  if (sfxVol <= 0) return;
   try {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
     const o = actx.createOscillator(), ga = actx.createGain();
     o.type = type;
     o.frequency.setValueAtTime(freq, actx.currentTime);
     if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), actx.currentTime + dur);
-    ga.gain.setValueAtTime(gain, actx.currentTime);
+    ga.gain.setValueAtTime(gain * sfxVol, actx.currentTime);
     ga.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
     o.connect(ga);
     ga.connect(actx.destination);
@@ -940,6 +943,8 @@ function sfx(freq, dur, type, gain, slide) {
 }
 
 function togglePause() {
+  const mainMenu = document.getElementById("main-menu");
+  if (mainMenu && !mainMenu.classList.contains("hidden")) return;
   if (state === "play") {
     state = "pause";
     ovPause.classList.remove("hidden");
@@ -950,6 +955,18 @@ function togglePause() {
 }
 
 document.addEventListener("keydown", function (e) {
+  const mainMenu = document.getElementById("main-menu");
+  const optModal = document.getElementById("options-modal");
+  const quitModal = document.getElementById("quit-modal");
+  if ((mainMenu && !mainMenu.classList.contains("hidden")) ||
+      (optModal && !optModal.classList.contains("hidden")) ||
+      (quitModal && !quitModal.classList.contains("hidden"))) {
+    if (e.code === "Escape" && typeof MainMenu !== "undefined") {
+      if (optModal && !optModal.classList.contains("hidden")) MainMenu.closeOptions();
+      if (quitModal && !quitModal.classList.contains("hidden")) MainMenu.closeQuit();
+    }
+    return;
+  }
   const code = e.code;
   if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].indexOf(code) >= 0) e.preventDefault();
   if (state === "over" && code === "Enter") { reset(); return; }
@@ -967,16 +984,27 @@ document.getElementById("btnPause").addEventListener("click", togglePause);
 document.getElementById("btnReset").addEventListener("click", reset);
 document.getElementById("btnAgain").addEventListener("click", reset);
 document.getElementById("btnSound").addEventListener("click", function () {
-  muted = !muted;
-  this.textContent = "Sonido: " + (muted ? "NO" : "SI");
+  if (typeof AudioSettings !== "undefined") {
+    AudioSettings.toggleSfxMute();
+  } else {
+    muted = !muted;
+    this.textContent = "Sonido: " + (muted ? "NO" : "SI");
+  }
 });
 
 const musicEl = document.getElementById("music");
-musicEl.volume = 0.35;
+if (typeof AudioSettings !== "undefined") {
+  musicEl.volume = AudioSettings.musicVolume;
+} else {
+  musicEl.volume = 0.35;
+}
 let musicOn = true;
 
 function tryPlayMusic() {
-  if (musicOn && musicEl.paused) {
+  const mainMenu = document.getElementById("main-menu");
+  if (mainMenu && !mainMenu.classList.contains("hidden")) return;
+  const isMuted = (typeof AudioSettings !== "undefined") ? (AudioSettings.musicMuted || AudioSettings.musicVolume <= 0) : !musicOn;
+  if (!isMuted && musicEl.paused) {
     musicEl.play().catch(function () { });
   }
 }
@@ -985,13 +1013,20 @@ document.addEventListener("keydown", tryPlayMusic);
 document.addEventListener("pointerdown", tryPlayMusic);
 
 document.getElementById("btnMusic").addEventListener("click", function () {
-  musicOn = !musicOn;
-  if (musicOn) {
-    tryPlayMusic();
+  if (typeof AudioSettings !== "undefined") {
+    AudioSettings.toggleMusicMute();
+    if (!AudioSettings.musicMuted && AudioSettings.musicVolume > 0 && musicEl.paused) {
+      musicEl.play().catch(function () {});
+    }
   } else {
-    musicEl.pause();
+    musicOn = !musicOn;
+    if (musicOn) {
+      tryPlayMusic();
+    } else {
+      musicEl.pause();
+    }
+    this.textContent = "Musica: " + (musicOn ? "SI" : "NO");
   }
-  this.textContent = "Musica: " + (musicOn ? "SI" : "NO");
 });
 
 const mcButtons = document.querySelectorAll("#mcontrols button");
