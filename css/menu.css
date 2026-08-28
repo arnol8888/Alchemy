@@ -43,57 +43,41 @@
   margin: 0;
 }
 
-/* Botones genericos temporales del menu */
+/* Botones del menu principal con imagenes tematicas */
 .menu-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
   margin: 0 auto;
 }
 
 .menu-btn {
-  width: 100%;
-  max-width: 340px;
-  height: 52px;
-  margin: 0 auto;
+  background: transparent;
+  border: none;
   padding: 0;
+  margin: 0 auto;
   cursor: pointer;
   outline: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  border-radius: 14px;
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #ffffff;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
 }
 
-.menu-btn span {
-  display: block;
-  width: 100%;
-  text-align: center;
-}
-
 .menu-btn:focus-visible {
   outline: 3px solid #ffd65c;
-  outline-offset: 4px;
+  outline-offset: 6px;
+  border-radius: 24px;
 }
 
 .menu-btn:hover {
-  transform: scale(1.04);
+  transform: scale(1.06);
 }
 
 .menu-btn:active {
@@ -101,49 +85,41 @@
   filter: brightness(0.92);
 }
 
-/* Diseno generico Play */
-.menu-btn-play {
+.menu-btn img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.8));
+  transition: filter 0.2s ease;
+  pointer-events: none;
+}
+
+/* Play Button */
+.menu-btn-play img {
+  height: 72px;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 12px rgba(255, 180, 80, 0.35));
+}
+.menu-btn-play:hover img {
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 24px rgba(255, 190, 90, 0.85)) brightness(1.12);
+}
+
+/* Options Button */
+.menu-btn-options img {
   height: 66px;
-  font-size: 23px;
-  color: #fff4ea;
-  background: linear-gradient(180deg, #96283b 0%, #5e1522 60%, #3a0d15 100%);
-  border: 2px solid #e04a62;
-  border-top: 2px solid #ff7a90;
-  border-bottom: 2px solid #2e080f;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 20px rgba(224, 74, 98, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 10px rgba(80, 240, 190, 0.3));
 }
-.menu-btn-play:hover {
-  border-color: #ff94a7;
-  filter: brightness(1.18);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 80, 105, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+.menu-btn-options:hover img {
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 22px rgba(90, 255, 200, 0.85)) brightness(1.12);
 }
 
-/* Diseno generico Options */
-.menu-btn-options {
-  background: linear-gradient(180deg, #184c52 0%, #0f3034 60%, #081d20 100%);
-  border: 2px solid #2db4be;
-  border-top: 2px solid #5ce0ea;
-  border-bottom: 2px solid #051416;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75), 0 0 16px rgba(45, 180, 190, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+/* Quit Button */
+.menu-btn-quit img {
+  height: 66px;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 10px rgba(180, 130, 255, 0.3));
 }
-.menu-btn-options:hover {
-  border-color: #72ecf5;
-  filter: brightness(1.18);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 24px rgba(60, 220, 230, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-/* Diseno generico Quit */
-.menu-btn-quit {
-  background: linear-gradient(180deg, #3e242c 0%, #26161b 60%, #170d10 100%);
-  border: 2px solid #7d4957;
-  border-top: 2px solid #a86c7c;
-  border-bottom: 2px solid #11090c;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-.menu-btn-quit:hover {
-  border-color: #c98093;
-  filter: brightness(1.18);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 22px rgba(200, 80, 100, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+.menu-btn-quit:hover img {
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 22px rgba(190, 140, 255, 0.85)) brightness(1.12);
 }
 
 /* Modales (Opciones y Salir) */
@@ -349,14 +325,15 @@
     top: 50%;
     width: 90vw;
   }
-  .menu-btn {
-    height: 48px;
-    font-size: 16px;
-    max-width: 300px;
+  .menu-buttons {
+    gap: 12px;
   }
-  .menu-btn-play {
+  .menu-btn-play img {
     height: 56px;
-    font-size: 19px;
+  }
+  .menu-btn-options img,
+  .menu-btn-quit img {
+    height: 50px;
   }
   .modal-box {
     padding: 20px 16px;
