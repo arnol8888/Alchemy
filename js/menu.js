@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Menu Principal y Sistema de Audio / Opciones para Alchemy / Koboldig
+ * Menu Principal y Sistema de Audio / Opciones para Koboldig
  */
 
 const AudioSettings = {
@@ -12,7 +12,7 @@ const AudioSettings = {
 
   init() {
     try {
-      const saved = localStorage.getItem("alchemy_audio_settings");
+      const saved = localStorage.getItem("koboldig_audio_settings") || localStorage.getItem("alchemy_audio_settings");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed.musicVolume === "number") this.musicVolume = parsed.musicVolume;
@@ -26,7 +26,7 @@ const AudioSettings = {
 
   save() {
     try {
-      localStorage.setItem("alchemy_audio_settings", JSON.stringify({
+      localStorage.setItem("koboldig_audio_settings", JSON.stringify({
         musicVolume: this.musicVolume,
         sfxVolume: this.sfxVolume,
         musicMuted: this.musicMuted,
