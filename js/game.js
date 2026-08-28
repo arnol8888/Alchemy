@@ -909,77 +909,37 @@ function getHighestStoneRow() {
 }
 
 function drawDangerLine(g, W, H, alpha) {
-  const lineY = 2 * CELL; // 100px - Límite de peligro (Game Over al tocar rows 0-1)
-  const pulse = 0.5 + 0.5 * Math.sin(now / 130); // Efecto intermitente apagado/encendido
-  const combAlpha = alpha * (0.25 + 0.75 * pulse);
+  const lineY = 2 * CELL; // 100px - Límite de peligro
+  const pulse = 0.5 + 0.5 * Math.sin(now / 150); // Efecto intermitente apagado/encendido
+  const combAlpha = alpha * (0.2 + 0.8 * pulse);
 
   g.save();
 
-  // 1. Tinte rojo ambiental en la zona superior de muerte (filas 0 y 1)
-  const dangerZoneGrad = g.createLinearGradient(0, 0, 0, lineY);
-  dangerZoneGrad.addColorStop(0, `rgba(255, 20, 50, ${0.28 * alpha * (0.4 + 0.6 * pulse)})`);
-  dangerZoneGrad.addColorStop(1, `rgba(255, 20, 50, ${0.05 * alpha * (0.4 + 0.6 * pulse)})`);
-  g.fillStyle = dangerZoneGrad;
-  g.fillRect(0, 0, W, lineY);
-
-  // 2. Resplandor exterior difuso de la línea láser
-  g.shadowColor = "#ff003c";
-  g.shadowBlur = 18 * pulse + 4;
-  g.strokeStyle = `rgba(255, 30, 70, ${0.55 * combAlpha})`;
-  g.lineWidth = 7;
+  // 1. Resplandor exterior suave
+  g.shadowColor = "rgba(220, 40, 60, 0.7)";
+  g.shadowBlur = 8 * pulse + 3;
+  g.strokeStyle = `rgba(220, 45, 65, ${0.35 * combAlpha})`;
+  g.lineWidth = 4.5;
   g.beginPath();
   g.moveTo(0, lineY);
   g.lineTo(W, lineY);
   g.stroke();
 
-  // 3. Rayo láser intermedio brillante
-  g.strokeStyle = `rgba(255, 60, 90, ${0.95 * combAlpha})`;
-  g.lineWidth = 3;
+  // 2. Línea roja principal
+  g.strokeStyle = `rgba(230, 50, 70, ${0.75 * combAlpha})`;
+  g.lineWidth = 2;
   g.beginPath();
   g.moveTo(0, lineY);
   g.lineTo(W, lineY);
   g.stroke();
 
-  // 4. Núcleo incandescente blanco-rosado
-  g.strokeStyle = `rgba(255, 245, 248, ${0.98 * combAlpha})`;
-  g.lineWidth = 1.4;
+  // 3. Núcleo sutil claro
+  g.strokeStyle = `rgba(255, 210, 220, ${0.5 * combAlpha})`;
+  g.lineWidth = 0.8;
   g.beginPath();
   g.moveTo(0, lineY);
   g.lineTo(W, lineY);
   g.stroke();
-
-  // 5. Balizas de advertencia en los extremos
-  const mSize = 6;
-  g.fillStyle = `rgba(255, 80, 110, ${0.98 * combAlpha})`;
-  
-  // Baliza izquierda
-  g.beginPath();
-  g.moveTo(3, lineY);
-  g.lineTo(3 + mSize, lineY - mSize);
-  g.lineTo(3 + mSize * 2, lineY);
-  g.lineTo(3 + mSize, lineY + mSize);
-  g.closePath();
-  g.fill();
-
-  // Baliza derecha
-  g.beginPath();
-  g.moveTo(W - 3, lineY);
-  g.lineTo(W - 3 - mSize, lineY - mSize);
-  g.lineTo(W - 3 - mSize * 2, lineY);
-  g.lineTo(W - 3 - mSize, lineY + mSize);
-  g.closePath();
-  g.fill();
-
-  // 6. Texto de advertencia
-  if (pulse > 0.25) {
-    g.font = "900 10.5px 'Segoe UI', sans-serif";
-    g.letterSpacing = "1.5px";
-    g.textAlign = "center";
-    g.fillStyle = `rgba(255, 170, 185, ${(pulse - 0.25) * 1.33 * alpha})`;
-    g.shadowColor = "#ff003c";
-    g.shadowBlur = 10;
-    g.fillText("⚠ PELIGRO: ZONA CRÍTICA ⚠", W / 2, lineY - 6);
-  }
 
   g.restore();
 }
