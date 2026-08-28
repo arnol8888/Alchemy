@@ -889,12 +889,6 @@ function render() {
   }
   ctx.restore();
 
-  const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.55, W / 2, H / 2, H * 1.05);
-  vg.addColorStop(0, "rgba(0,0,0,0)");
-  vg.addColorStop(1, "rgba(4,4,18,0.3)");
-  ctx.fillStyle = vg;
-  ctx.fillRect(0, 0, W, H);
-
   drawNext();
 }
 

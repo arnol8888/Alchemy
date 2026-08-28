@@ -4,7 +4,7 @@ body {
   min-height: 100vh;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: #eef0ff;
-  background: #0b0d16 url("../assets/images/cave_background.jpg") center top / cover no-repeat fixed;
+  background: #080a12 url("../assets/images/Main Menu buttonless.jpeg") 53.3% center / cover no-repeat fixed;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -459,7 +459,6 @@ kbd {
   background: url("../assets/images/board_frame.png") center / 100% 100% no-repeat;
   pointer-events: none;
   z-index: 10;
-  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.85));
 }
 
 #board {
