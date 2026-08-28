@@ -45,6 +45,7 @@ let particles = [], floats = [], pops = new Map();
 let shake = 0, muted = false, actx = null;
 let resPhase = null, resT0 = 0, resDur = 110, chainCount = 0;
 let ghostStones = [], falls = [];
+let dangerLineAlpha = 0;
 
 const SPRITE_COLORS = ["#e74c5b", "#4a90e2", "#2ecc71", "#9b59b6", "#ff8c1a", "#35d0e5", "#ff4fa0", "#ffd24a", "#3ed8c3", "#ff7ad1", "#a45cff", "#ffd76a"];
 let sprites = [], sheetReady = false;
@@ -256,6 +257,7 @@ function reset() {
   chainCount = 0;
   ghostStones = [];
   falls = [];
+  dangerLineAlpha = 0;
   nextPair = makePair();
   state = "play";
   ovOver.classList.add("hidden");
@@ -882,13 +884,14 @@ function render() {
     ctx.restore();
   }
 
-  let danger = false;
-  for (let c = 0; c < COLS; c++) if (board[0][c]) danger = true;
-  if (danger) {
-    ctx.globalAlpha = 0.07 + 0.05 * Math.sin(now / 140);
-    ctx.fillStyle = "#ff2050";
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
+  const highestRow = getHighestStoneRow();
+  const inDanger = (state === "play" || state === "pause") && highestRow <= 3;
+  const targetAlpha = inDanger ? 1 : 0;
+  const dt = lastTs ? Math.min(100, now - lastTs) : 16;
+  dangerLineAlpha += (targetAlpha - dangerLineAlpha) * Math.min(1, dt * 0.008);
+
+  if (dangerLineAlpha > 0.005) {
+    drawDangerLine(ctx, W, H, dangerLineAlpha);
   }
   ctx.restore();
 
@@ -899,6 +902,91 @@ function render() {
   ctx.fillRect(0, 0, W, H);
 
   drawNext();
+}
+
+function getHighestStoneRow() {
+  if (!board) return ROWS;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c]) return r;
+    }
+  }
+  return ROWS;
+}
+
+function drawDangerLine(g, W, H, alpha) {
+  const lineY = 2 * CELL; // 100px - Límite de peligro (Game Over al tocar rows 0-1)
+  const pulse = 0.5 + 0.5 * Math.sin(now / 160); // Efecto pulsante intermitente encendido/apagado
+  const combAlpha = alpha * (0.15 + 0.85 * pulse);
+
+  g.save();
+
+  // 1. Tinte rojo ambiental pulsante en la zona de muerte (filas 0 y 1)
+  const dangerZoneGrad = g.createLinearGradient(0, 0, 0, lineY);
+  dangerZoneGrad.addColorStop(0, `rgba(255, 20, 50, ${0.22 * pulse * alpha})`);
+  dangerZoneGrad.addColorStop(1, `rgba(255, 20, 50, ${0.03 * pulse * alpha})`);
+  g.fillStyle = dangerZoneGrad;
+  g.fillRect(0, 0, W, lineY);
+
+  // 2. Resplandor exterior de la línea láser
+  g.shadowColor = "#ff003c";
+  g.shadowBlur = 16 * pulse;
+  g.strokeStyle = `rgba(255, 30, 70, ${0.45 * combAlpha})`;
+  g.lineWidth = 6;
+  g.beginPath();
+  g.moveTo(0, lineY);
+  g.lineTo(W, lineY);
+  g.stroke();
+
+  // 3. Rayo láser intermedio brillante
+  g.strokeStyle = `rgba(255, 60, 90, ${0.9 * combAlpha})`;
+  g.lineWidth = 2.5;
+  g.beginPath();
+  g.moveTo(0, lineY);
+  g.lineTo(W, lineY);
+  g.stroke();
+
+  // 4. Núcleo incandescente blanco-rosado
+  g.strokeStyle = `rgba(255, 240, 245, ${0.98 * combAlpha})`;
+  g.lineWidth = 1;
+  g.beginPath();
+  g.moveTo(0, lineY);
+  g.lineTo(W, lineY);
+  g.stroke();
+
+  // 5. Balizas de advertencia en los extremos (diamantes luminosos)
+  const mSize = 5;
+  g.fillStyle = `rgba(255, 80, 110, ${0.95 * combAlpha})`;
+  
+  // Baliza izquierda
+  g.beginPath();
+  g.moveTo(4, lineY);
+  g.lineTo(4 + mSize, lineY - mSize);
+  g.lineTo(4 + mSize * 2, lineY);
+  g.lineTo(4 + mSize, lineY + mSize);
+  g.closePath();
+  g.fill();
+
+  // Baliza derecha
+  g.beginPath();
+  g.moveTo(W - 4, lineY);
+  g.lineTo(W - 4 - mSize, lineY - mSize);
+  g.lineTo(W - 4 - mSize * 2, lineY);
+  g.lineTo(W - 4 - mSize, lineY + mSize);
+  g.closePath();
+  g.fill();
+
+  // 6. Texto de advertencia cuando la pulsación está alta
+  if (pulse > 0.3) {
+    g.font = "800 10px 'Segoe UI', sans-serif";
+    g.textAlign = "center";
+    g.fillStyle = `rgba(255, 140, 160, ${(pulse - 0.3) * 1.4 * alpha})`;
+    g.shadowColor = "#ff003c";
+    g.shadowBlur = 8;
+    g.fillText("⚠ PELIGRO ⚠", W / 2, lineY - 6);
+  }
+
+  g.restore();
 }
 
 function drawNext() {
@@ -1063,8 +1151,8 @@ function loop(ts) {
     else if (resPhase === "pop" && el >= POP_MS) beginSettle();
     else if (resPhase === "fall" && el >= resDur) nextWave();
   }
-  let danger = false;
-  for (let c = 0; c < COLS; c++) if (board[0][c]) danger = true;
+  const highestRow = getHighestStoneRow();
+  const danger = state === "play" && highestRow <= 3;
   Character.setDanger(danger);
   updateFx(dt / 1000);
   render();
