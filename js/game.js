@@ -115,11 +115,11 @@ const Character = {
   // 4: Default / Jugando y moviendo piezas (cuarto personaje)
   // 5: Combo x2 (quinto personaje)
   SPRITES: {
-    default: "assets/images/character/kobold_default.png",
-    combo1: "assets/images/character/kobold_combo1.png",
-    combo2: "assets/images/character/kobold_combo2.png",
-    combo3: "assets/images/character/kobold_combo3.png",
-    gameover: "assets/images/character/kobold_gameover.png"
+    default: "assets/images/character/Kobold Default.png",
+    combo1: "assets/images/character/Kobold Combo1.png",
+    combo2: "assets/images/character/Kobold Combo2.png",
+    combo3: "assets/images/character/Kobold Combo3.png",
+    gameover: "assets/images/character/Kobold Gameover.png"
   },
 
   init: function () {
